@@ -21,7 +21,7 @@ export async function getWizardState(
   env: BotEnv,
   chatId: number,
 ): Promise<WizardState | undefined> {
-  const raw = await env.BOT_SESSIONS.get(wizardKey(chatId));
+  const raw = await env.SESSIONS.get(wizardKey(chatId));
   if (!raw) return undefined;
   try {
     return JSON.parse(raw) as WizardState;
@@ -35,20 +35,20 @@ export async function putWizardState(
   chatId: number,
   state: WizardState,
 ): Promise<void> {
-  await env.BOT_SESSIONS.put(wizardKey(chatId), JSON.stringify(state), {
+  await env.SESSIONS.put(wizardKey(chatId), JSON.stringify(state), {
     expirationTtl: WIZARD_TTL_SECONDS,
   });
 }
 
 export async function clearWizardState(env: BotEnv, chatId: number): Promise<void> {
-  await env.BOT_SESSIONS.delete(wizardKey(chatId));
+  await env.SESSIONS.delete(wizardKey(chatId));
 }
 
 export async function getSavedAddress(
   env: BotEnv,
   chatId: number,
 ): Promise<string | undefined> {
-  const value = await env.BOT_SESSIONS.get(addressKey(chatId));
+  const value = await env.SESSIONS.get(addressKey(chatId));
   return value ?? undefined;
 }
 
@@ -57,9 +57,9 @@ export async function putSavedAddress(
   chatId: number,
   address: string,
 ): Promise<void> {
-  await env.BOT_SESSIONS.put(addressKey(chatId), address);
+  await env.SESSIONS.put(addressKey(chatId), address);
 }
 
 export async function clearSavedAddress(env: BotEnv, chatId: number): Promise<void> {
-  await env.BOT_SESSIONS.delete(addressKey(chatId));
+  await env.SESSIONS.delete(addressKey(chatId));
 }

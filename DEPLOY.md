@@ -16,13 +16,15 @@ npm install
 
 ## KV namespace
 
-The wizard and saved wallet address use a KV namespace bound as `BOT_SESSIONS`.
+The wizard and saved wallet address use a KV namespace bound as `SESSIONS`. Cloudflare names the provisioned namespace `{worker}-{binding}` → **celina-bot-sessions**.
 
 [`wrangler.jsonc`](wrangler.jsonc) lists the binding **without** an `id` so Cloudflare Workers Builds can provision KV on git deploy. Do not put a placeholder like `local-bot-sessions` in `id` — that fails production with code 10042.
 
 Create or inspect the namespace in the **Cloudflare dashboard** for this Worker (Storage → KV), not with a local Wrangler login (that CLI may be pointed at a different account).
 
 After the first successful deploy, copy the namespace id from the dashboard into `wrangler.jsonc` (`kv_namespaces[0].id`) so later builds reuse it instead of trying to create a second namespace.
+
+If an older namespace named `celina-bot-bot-sessions` exists, delete it in **Storage → KV** — it was created from the previous `BOT_SESSIONS` binding.
 
 ## Secrets and variables
 
@@ -50,7 +52,7 @@ Default URL: `http://localhost:8787` (or the port Wrangler prints). Use a tunnel
 
 Git-connected Cloudflare Workers Builds run `npx wrangler deploy` on this repo. Commit and push — do not deploy from a local Wrangler login that belongs to another project.
 
-[`wrangler.jsonc`](wrangler.jsonc) binds `BOT_SESSIONS`, custom domain `bot.usecelina.xyz`, and `nodejs_compat`.
+[`wrangler.jsonc`](wrangler.jsonc) binds `SESSIONS`, custom domain `bot.usecelina.xyz`, and `nodejs_compat`.
 
 ## Custom domain
 

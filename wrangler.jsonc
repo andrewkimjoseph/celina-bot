@@ -17,7 +17,7 @@
   },
   "kv_namespaces": [
     {
-      "binding": "BOT_SESSIONS"
+      "binding": "SESSIONS"
     }
   ]
 }
