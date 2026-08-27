@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { parseCallArgs, parseParamsText, parseAddress, coerceWizardValue } from "../src/parse-args.js";
+import {
+  parseCallArgs,
+  parseParamsText,
+  parseAddress,
+  coerceWizardValue,
+  stringifyJsonNumbers,
+} from "../src/parse-args.js";
 
 describe("parseCallArgs", () => {
   it("parses key=value pairs and --json", () => {
@@ -19,6 +25,11 @@ describe("parseCallArgs", () => {
     expect(parsed.json).toBe(false);
   });
 
+  it("stringifies numbers in a JSON object body", () => {
+    const parsed = parseCallArgs(`get_uniswap_quote {"amount":23,"token_in":"CELO"}`);
+    expect(parsed.params).toEqual({ amount: "23", token_in: "CELO" });
+  });
+
   it("treats json=1 as the escape hatch", () => {
     const parsed = parseCallArgs("get_network_status json=1");
     expect(parsed.tool).toBe("get_network_status");
@@ -35,9 +46,29 @@ describe("parseParamsText", () => {
     expect(parseParamsText("")).toEqual({ params: {}, json: false });
   });
 
-  it("coerces booleans and numbers", () => {
-    const { params } = parseParamsText("include_zero=true count=5");
-    expect(params).toEqual({ include_zero: true, count: 5 });
+  it("keeps key=value scalars as strings", () => {
+    const { params } = parseParamsText("include_zero=true count=5 amount=23");
+    expect(params).toEqual({
+      include_zero: "true",
+      count: "5",
+      amount: "23",
+    });
+  });
+});
+
+describe("stringifyJsonNumbers", () => {
+  it("stringifies primitive numbers and leaves booleans and arrays", () => {
+    expect(
+      stringifyJsonNumbers({
+        amount: 23,
+        include_zero: true,
+        tokens: [1, 2],
+      }),
+    ).toEqual({
+      amount: "23",
+      include_zero: true,
+      tokens: [1, 2],
+    });
   });
 });
 
@@ -49,9 +80,15 @@ describe("parseAddress", () => {
 });
 
 describe("coerceWizardValue", () => {
-  it("parses booleans, numbers, and JSON arrays", () => {
+  it("parses booleans, numbers, and JSON arrays when the catalog type says so", () => {
     expect(coerceWizardValue("yes", "boolean")).toBe(true);
     expect(coerceWizardValue("3", "number")).toBe(3);
     expect(coerceWizardValue("[\"CELO\",\"USDm\"]", "array")).toEqual(["CELO", "USDm"]);
+  });
+
+  it("keeps string (and unknown) types as trimmed text", () => {
+    expect(coerceWizardValue("23", "string")).toBe("23");
+    expect(coerceWizardValue(" 23 ", "string")).toBe("23");
+    expect(coerceWizardValue("true", "string")).toBe("true");
   });
 });

@@ -5,25 +5,37 @@ export type ParsedCall = {
   error?: string;
 };
 
-function coerceValue(raw: string): unknown {
-  if (raw === "true") return true;
-  if (raw === "false") return false;
-  if (raw === "null") return null;
-  if (/^-?\d+(\.\d+)?$/.test(raw)) {
-    const asNumber = Number(raw);
-    if (Number.isFinite(asNumber)) return asNumber;
-  }
-  if (
-    (raw.startsWith("{") && raw.endsWith("}")) ||
-    (raw.startsWith("[") && raw.endsWith("]"))
-  ) {
-    try {
-      return JSON.parse(raw) as unknown;
-    } catch {
-      return raw;
-    }
-  }
+/** Telegram text stays a string — do not guess numbers or booleans. */
+function coerceValue(raw: string): string {
   return raw;
+}
+
+/** JSON `/call` bodies type numbers as numbers; stringify those primitives. */
+export function stringifyJsonNumbers(value: unknown): unknown {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value !== null && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof nested === "number" && Number.isFinite(nested)) {
+        out[key] = String(nested);
+      } else if (
+        nested !== null &&
+        typeof nested === "object" &&
+        !Array.isArray(nested)
+      ) {
+        out[key] = stringifyJsonNumbers(nested);
+      } else {
+        out[key] = nested;
+      }
+    }
+    return out;
+  }
+  return value;
 }
 
 function stripJsonFlag(tokens: string[]): { tokens: string[]; json: boolean } {
@@ -56,7 +68,10 @@ export function parseParamsText(text: string): { params: Record<string, unknown>
       const obj = parsed as Record<string, unknown>;
       const json = flagFromTokens || obj.json === 1 || obj.json === true;
       delete obj.json;
-      return { params: obj, json };
+      return {
+        params: stringifyJsonNumbers(obj) as Record<string, unknown>,
+        json,
+      };
     } catch {
       return { params: {}, json: flagFromTokens };
     }
@@ -117,5 +132,5 @@ export function coerceWizardValue(raw: string, type: string): unknown {
       return trimmed.split(",").map((part) => part.trim()).filter(Boolean);
     }
   }
-  return coerceValue(trimmed);
+  return trimmed;
 }
