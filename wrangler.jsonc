@@ -2,15 +2,22 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "celina-bot",
   "main": "src/index.ts",
-  "compatibility_date": "2026-08-19",
+  "compatibility_date": "2026-08-27",
   "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "bot.usecelina.xyz",
+      "custom_domain": true
+    }
+  ],
   "observability": {
     "enabled": true
   },
   "kv_namespaces": [
     {
-      "binding": "BOT_SESSIONS",
-      "id": "local-bot-sessions"
+      "binding": "BOT_SESSIONS"
     }
   ]
 }

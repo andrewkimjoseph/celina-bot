@@ -167,6 +167,22 @@ export async function setMyCommands(
   await telegramCall(token, "setMyCommands", { commands });
 }
 
+export async function setMyShortDescription(
+  token: string,
+  shortDescription: string,
+): Promise<void> {
+  await telegramCall(token, "setMyShortDescription", {
+    short_description: shortDescription,
+  });
+}
+
+export async function setMyDescription(
+  token: string,
+  description: string,
+): Promise<void> {
+  await telegramCall(token, "setMyDescription", { description });
+}
+
 export async function setWebhook(
   token: string,
   url: string,

@@ -2,8 +2,15 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { buildSetMyCommandsPayload } from "./aliases.js";
 import { handleCallbackQuery, handleTextMessage } from "./commands.js";
+import { BOT_ABOUT, BOT_DESCRIPTION } from "./constants.js";
 import type { BotEnv } from "./env.js";
-import { setMyCommands, setWebhook, type TelegramUpdate } from "./telegram.js";
+import {
+  setMyCommands,
+  setMyDescription,
+  setMyShortDescription,
+  setWebhook,
+  type TelegramUpdate,
+} from "./telegram.js";
 
 type AppBindings = { Bindings: BotEnv };
 
@@ -98,7 +105,15 @@ export function createApp(): Hono<AppBindings> {
     }
     await setWebhook(c.env.TELEGRAM_BOT_TOKEN, url, c.env.TELEGRAM_WEBHOOK_SECRET);
     await setMyCommands(c.env.TELEGRAM_BOT_TOKEN, buildSetMyCommandsPayload());
-    return c.json({ ok: true, webhook: url, commands: buildSetMyCommandsPayload().length });
+    await setMyShortDescription(c.env.TELEGRAM_BOT_TOKEN, BOT_ABOUT);
+    await setMyDescription(c.env.TELEGRAM_BOT_TOKEN, BOT_DESCRIPTION);
+    return c.json({
+      ok: true,
+      webhook: url,
+      commands: buildSetMyCommandsPayload().length,
+      about: BOT_ABOUT,
+      description: BOT_DESCRIPTION,
+    });
   });
 
   return app;

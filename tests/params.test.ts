@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BOT_ABOUT, BOT_DESCRIPTION } from "../src/constants.js";
 import { applySavedAddress, fieldQueue, missingRequiredFields } from "../src/params.js";
 import { encodeCallback } from "../src/keyboards.js";
 import type { ToolMeta } from "../src/celina-api.js";
@@ -43,5 +44,17 @@ describe("callback_data", () => {
     for (const data of payloads) {
       expect(new TextEncoder().encode(data).length).toBeLessThanOrEqual(64);
     }
+  });
+});
+
+describe("bot about", () => {
+  it("fits Telegram's 120-character About limit", () => {
+    expect(BOT_ABOUT.length).toBeGreaterThan(0);
+    expect(BOT_ABOUT.length).toBeLessThanOrEqual(120);
+  });
+
+  it("fits Telegram's 512-character Description limit", () => {
+    expect(BOT_DESCRIPTION.length).toBeGreaterThan(0);
+    expect(BOT_DESCRIPTION.length).toBeLessThanOrEqual(512);
   });
 });

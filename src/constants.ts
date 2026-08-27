@@ -35,3 +35,18 @@ export const KEYBOARD = {
 
 export const FORMATTED_SOFT_LIMIT = 3500;
 export const TELEGRAM_TEXT_LIMIT = 4096;
+
+export const BOT_USERNAME = "thecelinabot";
+
+/** BotFather About / Telegram `setMyShortDescription` (max 120). */
+export const BOT_ABOUT =
+  "Read-only Celo mainnet tools — balances, quotes, governance. No keys, no signing.";
+
+/** BotFather Description / Telegram `setMyDescription` (max 512). Shown with the profile photo. */
+export const BOT_DESCRIPTION = `Read-only Celo mainnet in Telegram.
+
+Look up balances, quotes, governance, and staking. Tap Tools, or save a wallet with /setaddress so you don't retype it.
+
+Celina never asks for keys and never signs. Data comes from the public Celina API.
+
+Tap Start · usecelina.xyz`;

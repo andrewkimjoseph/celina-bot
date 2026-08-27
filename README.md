@@ -4,9 +4,11 @@
 
 # Celina Telegram bot
 
-Telegram bot over the public [Celina API](https://api.usecelina.xyz) — read-only Celo mainnet tools, no API key, no signing.
+Telegram bot: [**@thecelinabot**](https://t.me/thecelinabot)
 
-Deployed as a **Cloudflare Worker** (Hono + `wrangler`).
+Read-only Celo mainnet tools — balances, quotes, governance. No keys, no signing.
+
+Talks to the public [Celina API](https://api.usecelina.xyz). Deployed as a **Cloudflare Worker** (Hono + `wrangler`).
 
 Suggested production host: `https://bot.usecelina.xyz`
 
@@ -53,4 +55,4 @@ Do not hand-edit `src/aliases.generated.ts`. Optional memorable aliases live in 
 
 ## Deploy
 
-See **[DEPLOY.md](DEPLOY.md)** for secrets, KV, webhook URL, and `setMyCommands`. Agents do not run `wrangler deploy` — commit and push; you deploy from your machine.
+See **[DEPLOY.md](DEPLOY.md)** for secrets, KV, webhook URL, and BotFather copy. Production deploys from git (Cloudflare Workers Builds). Do not use a local Wrangler login that belongs to another Cloudflare account.
