@@ -6,6 +6,7 @@ export type WizardState = {
   collected: Record<string, unknown>;
   remaining: string[];
   asking?: string;
+  human?: boolean;
   json?: boolean;
 };
 

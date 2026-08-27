@@ -49,14 +49,14 @@ const HELP_TEXT = [
   "<b>Commands</b>",
   "/start — shortcut keyboard",
   "/tools — browse tools",
-  "/call &lt;tool&gt; [json | key=value …] — invoke directly",
+  "/call &lt;tool&gt; [key=value …] — invoke directly",
   "/setaddress 0x… — save a default wallet",
   "/clearaddress — forget it",
   "/whoami — show saved wallet",
   "/cancel — abort a prompt",
   "/help &lt;tool&gt; — inputs for one tool",
   "",
-  "Add <code>--json</code> to /call for the raw payload.",
+  "Replies are pretty JSON. Add <code>--human</code> for labeled chat text. Large payloads attach as a .json file.",
 ].join("\n");
 
 function helpForTool(tool: ToolMeta): string {
@@ -86,7 +86,7 @@ async function resolveAndRun(
   chatId: number,
   toolName: string,
   params: Record<string, unknown>,
-  json?: boolean,
+  flags?: { human?: boolean; json?: boolean },
   existingMessageId?: number,
 ): Promise<void> {
   const tool = await findCachedTool(env, toolName);
@@ -102,7 +102,11 @@ async function resolveAndRun(
   const filled = applySavedAddress(tool.inputs, params, saved);
   const missing = missingRequiredFields(tool.inputs, filled);
   if (missing.length > 0) {
-    await startWizard(env, chatId, tool, filled, { json, saved });
+    await startWizard(env, chatId, tool, filled, {
+      human: flags?.human,
+      json: flags?.json,
+      saved,
+    });
     return;
   }
   await invokeWithLoading(
@@ -110,7 +114,7 @@ async function resolveAndRun(
     { chatId, existingMessageId },
     tool.name,
     filled,
-    { json },
+    { human: flags?.human, json: flags?.json },
   );
 }
 
@@ -165,12 +169,15 @@ export async function handleCall(
     await sendMessage(
       env.TELEGRAM_BOT_TOKEN,
       chatId,
-      parsed.error ?? "Usage: /call <tool> [json | key=value …]",
+      parsed.error ?? "Usage: /call <tool> [key=value …] [--human]",
     );
     return;
   }
   const resolved = resolveToolName(parsed.tool) ?? parsed.tool;
-  await resolveAndRun(env, chatId, resolved, parsed.params, parsed.json);
+  await resolveAndRun(env, chatId, resolved, parsed.params, {
+    human: parsed.human,
+    json: parsed.json,
+  });
 }
 
 export async function handleSetAddress(
@@ -305,8 +312,8 @@ export async function handleTextMessage(
 
   const toolName = resolveToolName(parsed.command);
   if (toolName) {
-    const { params, json } = parseParamsText(parsed.args);
-    await resolveAndRun(env, chatId, toolName, params, json);
+    const { params, json, human } = parseParamsText(parsed.args);
+    await resolveAndRun(env, chatId, toolName, params, { human, json });
     return;
   }
 
@@ -391,5 +398,5 @@ export async function handleCallbackQuery(
     await sendMessage(token, chatId, "That tool list expired. Send /tools to start again.");
     return;
   }
-  await resolveAndRun(env, chatId, tool.name, {}, false, messageId);
+  await resolveAndRun(env, chatId, tool.name, {}, undefined, messageId);
 }

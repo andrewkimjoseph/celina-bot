@@ -58,9 +58,9 @@ function jsonReply(tool: string, result: unknown): FormattedReply {
 export function formatToolResult(
   tool: string,
   result: unknown,
-  options?: { json?: boolean },
+  options?: { json?: boolean; human?: boolean },
 ): FormattedReply {
-  if (options?.json) {
+  if (options?.json || !options?.human) {
     return jsonReply(tool, result);
   }
 
@@ -70,11 +70,7 @@ export function formatToolResult(
     return { kind: "html", text: finalizeFormattedHtml(heuristic) };
   }
 
-  const pretty = JSON.stringify(result, null, 2);
-  if (pretty.length <= FORMATTED_SOFT_LIMIT) {
-    return { kind: "html", text: pre(pretty) };
-  }
-  return jsonDocument(tool, pretty);
+  return jsonReply(tool, result);
 }
 
 export function formatToolError(tool: string, message: string): string {

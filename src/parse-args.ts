@@ -2,6 +2,7 @@ export type ParsedCall = {
   tool?: string;
   params: Record<string, unknown>;
   json: boolean;
+  human: boolean;
   error?: string;
 };
 
@@ -38,47 +39,66 @@ export function stringifyJsonNumbers(value: unknown): unknown {
   return value;
 }
 
-function stripJsonFlag(tokens: string[]): { tokens: string[]; json: boolean } {
+function stripOutputFlags(tokens: string[]): {
+  tokens: string[];
+  json: boolean;
+  human: boolean;
+} {
   let json = false;
+  let human = false;
   const kept: string[] = [];
   for (const token of tokens) {
     if (token === "--json" || token === "json=1" || token === "json=true") {
       json = true;
       continue;
     }
+    if (token === "--human" || token === "human=1" || token === "human=true") {
+      human = true;
+      continue;
+    }
     kept.push(token);
   }
-  return { tokens: kept, json };
+  return { tokens: kept, json, human };
 }
 
-export function parseParamsText(text: string): { params: Record<string, unknown>; json: boolean } {
+export function parseParamsText(text: string): {
+  params: Record<string, unknown>;
+  json: boolean;
+  human: boolean;
+} {
   const trimmed = text.trim();
-  if (!trimmed) return { params: {}, json: false };
+  if (!trimmed) return { params: {}, json: false, human: false };
 
   const roughTokens = trimmed.split(/\s+/);
-  const { tokens, json: flagFromTokens } = stripJsonFlag(roughTokens);
+  const { tokens, json: flagFromTokens, human: humanFromTokens } =
+    stripOutputFlags(roughTokens);
   const remainder = tokens.join(" ").trim();
 
   if (remainder.startsWith("{")) {
     try {
       const parsed = JSON.parse(remainder) as unknown;
       if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-        return { params: {}, json: flagFromTokens };
+        return { params: {}, json: flagFromTokens, human: humanFromTokens };
       }
       const obj = parsed as Record<string, unknown>;
       const json = flagFromTokens || obj.json === 1 || obj.json === true;
+      const human =
+        humanFromTokens || obj.human === 1 || obj.human === true;
       delete obj.json;
+      delete obj.human;
       return {
         params: stringifyJsonNumbers(obj) as Record<string, unknown>,
         json,
+        human,
       };
     } catch {
-      return { params: {}, json: flagFromTokens };
+      return { params: {}, json: flagFromTokens, human: humanFromTokens };
     }
   }
 
   const params: Record<string, unknown> = {};
   let json = flagFromTokens;
+  let human = humanFromTokens;
   for (const token of tokens) {
     const eq = token.indexOf("=");
     if (eq <= 0) continue;
@@ -88,22 +108,36 @@ export function parseParamsText(text: string): { params: Record<string, unknown>
       json = value === "1" || value === "true";
       continue;
     }
+    if (key === "human") {
+      human = value === "1" || value === "true";
+      continue;
+    }
     params[key] = coerceValue(value);
   }
-  return { params, json };
+  return { params, json, human };
 }
 
 export function parseCallArgs(text: string): ParsedCall {
   const trimmed = text.trim();
   if (!trimmed) {
-    return { params: {}, json: false, error: "Usage: /call <tool> [json | key=value …]" };
+    return {
+      params: {},
+      json: false,
+      human: false,
+      error: "Usage: /call <tool> [key=value …] [--human]",
+    };
   }
   const [tool, ...rest] = trimmed.split(/\s+/);
   if (!tool) {
-    return { params: {}, json: false, error: "Usage: /call <tool> [json | key=value …]" };
+    return {
+      params: {},
+      json: false,
+      human: false,
+      error: "Usage: /call <tool> [key=value …] [--human]",
+    };
   }
-  const { params, json } = parseParamsText(rest.join(" "));
-  return { tool, params, json };
+  const { params, json, human } = parseParamsText(rest.join(" "));
+  return { tool, params, json, human };
 }
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;

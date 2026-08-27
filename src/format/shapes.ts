@@ -58,7 +58,7 @@ function formatListItems(items: unknown[]): string {
   });
   if (objects.length > LIST_CAP) {
     lines.push(
-      escapeHtml(`…and ${objects.length - LIST_CAP} more — use --json for the rest`),
+      escapeHtml(`…and ${objects.length - LIST_CAP} more — omit --human for the rest`),
     );
   }
   return lines.join("\n");
@@ -133,7 +133,7 @@ export function formatByShape(result: unknown): string | undefined {
     const summary = formatShallowObject(
       Object.fromEntries(scalarKeys) as Record<string, unknown>,
     );
-    return `${summary}\n${escapeHtml("Nested details omitted — use --json for details")}`;
+    return `${summary}\n${escapeHtml("Nested details omitted — omit --human for JSON")}`;
   }
 
   return undefined;

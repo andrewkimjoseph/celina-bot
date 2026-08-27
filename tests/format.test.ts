@@ -3,12 +3,16 @@ import { formatToolResult } from "../src/format/format-result.js";
 
 describe("formatToolResult", () => {
   it("formats network status as labeled lines", () => {
-    const reply = formatToolResult("get_network_status", {
-      network: "mainnet",
-      chainId: 42220,
-      blockNumber: "123",
-      gasPriceWei: "100",
-    });
+    const reply = formatToolResult(
+      "get_network_status",
+      {
+        network: "mainnet",
+        chainId: 42220,
+        blockNumber: "123",
+        gasPriceWei: "100",
+      },
+      { human: true },
+    );
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
     expect(reply.text).toContain("Network status");
@@ -18,13 +22,17 @@ describe("formatToolResult", () => {
   });
 
   it("formats stablecoin balances and skips zeros", () => {
-    const reply = formatToolResult("get_stablecoin_balances", {
-      address: "0x1234567890abcdef1234567890abcdef12345678",
-      stablecoins: [
-        { symbol: "USDm", formatted: "10.5", raw: "10500000" },
-        { symbol: "USDT", formatted: "0", raw: "0" },
-      ],
-    });
+    const reply = formatToolResult(
+      "get_stablecoin_balances",
+      {
+        address: "0x1234567890abcdef1234567890abcdef12345678",
+        stablecoins: [
+          { symbol: "USDm", formatted: "10.5", raw: "10500000" },
+          { symbol: "USDT", formatted: "0", raw: "0" },
+        ],
+      },
+      { human: true },
+    );
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
     expect(reply.text).toContain("USDm");
@@ -33,25 +41,33 @@ describe("formatToolResult", () => {
   });
 
   it("shows the empty governance message", () => {
-    const reply = formatToolResult("get_actionable_governance_proposals", {
-      queued: [],
-      referendum: [],
-      message: "No actionable proposals",
-    });
+    const reply = formatToolResult(
+      "get_actionable_governance_proposals",
+      {
+        queued: [],
+        referendum: [],
+        message: "No actionable proposals",
+      },
+      { human: true },
+    );
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
     expect(reply.text).toContain("No actionable proposals");
   });
 
   it("formats quotes as in → out", () => {
-    const reply = formatToolResult("get_mento_fx_quote", {
-      protocol: "mento_fx",
-      tokenIn: "CELO",
-      tokenOut: "USDm",
-      amountIn: "10",
-      expectedOut: "4.2",
-      routeHops: 1,
-    });
+    const reply = formatToolResult(
+      "get_mento_fx_quote",
+      {
+        protocol: "mento_fx",
+        tokenIn: "CELO",
+        tokenOut: "USDm",
+        amountIn: "10",
+        expectedOut: "4.2",
+        routeHops: 1,
+      },
+      { human: true },
+    );
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
     expect(reply.text).toContain("CELO");
@@ -61,17 +77,29 @@ describe("formatToolResult", () => {
   });
 
   it("escapes HTML in dynamic strings", () => {
-    const reply = formatToolResult("get_network_status", {
-      network: "mainnet <script>",
-      chainId: 1,
-    });
+    const reply = formatToolResult(
+      "get_network_status",
+      {
+        network: "mainnet <script>",
+        chainId: 1,
+      },
+      { human: true },
+    );
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
     expect(reply.text).toContain("&lt;script&gt;");
     expect(reply.text).not.toContain("<script>");
   });
 
-  it("returns inline pre JSON when --json fits", () => {
+  it("defaults to inline pre JSON", () => {
+    const reply = formatToolResult("get_network_status", { chainId: 42220 });
+    expect(reply.kind).toBe("html");
+    if (reply.kind !== "html") return;
+    expect(reply.text).toContain("<pre>");
+    expect(reply.text).toContain("42220");
+  });
+
+  it("keeps JSON when --json is passed as a no-op", () => {
     const reply = formatToolResult("get_network_status", { chainId: 42220 }, { json: true });
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
@@ -79,9 +107,21 @@ describe("formatToolResult", () => {
     expect(reply.text).toContain("42220");
   });
 
-  it("attaches oversized JSON instead of truncating --json", () => {
+  it("prefers JSON when both --human and --json are set", () => {
+    const reply = formatToolResult(
+      "get_network_status",
+      { network: "mainnet", chainId: 42220 },
+      { human: true, json: true },
+    );
+    expect(reply.kind).toBe("html");
+    if (reply.kind !== "html") return;
+    expect(reply.text).toContain("<pre>");
+    expect(reply.text).not.toContain("Network status");
+  });
+
+  it("attaches oversized JSON instead of truncating", () => {
     const bulky = { items: Array.from({ length: 400 }, (_, i) => ({ id: i, title: `Item ${i}` })) };
-    const reply = formatToolResult("get_governance_proposals", bulky, { json: true });
+    const reply = formatToolResult("get_governance_proposals", bulky);
     expect(reply.kind).toBe("document");
     if (reply.kind !== "document") return;
     expect(reply.filename).toBe("get_governance_proposals.json");
@@ -89,11 +129,15 @@ describe("formatToolResult", () => {
     expect(reply.caption).toMatch(/Result attached as JSON/);
   });
 
-  it("falls through to shape heuristics for unknown tools", () => {
-    const reply = formatToolResult("some_unknown_tool", {
-      network: "mainnet",
-      ok: true,
-    });
+  it("falls through to shape heuristics for unknown tools with --human", () => {
+    const reply = formatToolResult(
+      "some_unknown_tool",
+      {
+        network: "mainnet",
+        ok: true,
+      },
+      { human: true },
+    );
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
     expect(reply.text).toContain("Network");

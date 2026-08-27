@@ -19,7 +19,7 @@ export function formatBytes(bytes: number): string {
   return `${(kb / 1024).toFixed(1)}mb`;
 }
 
-const TRUNCATION_NOTE = "… (truncated — add --json for full payload)";
+const TRUNCATION_NOTE = "… (truncated — omit --human for the full JSON payload)";
 
 /** Truncate raw text first, then escape, so entities are never split. */
 export function escapeAndTruncate(

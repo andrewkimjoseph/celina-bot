@@ -18,7 +18,7 @@ export async function invokeWithLoading(
   target: InvokeTarget,
   tool: string,
   params: Record<string, unknown>,
-  options?: { json?: boolean },
+  options?: { json?: boolean; human?: boolean },
 ): Promise<void> {
   const token = env.TELEGRAM_BOT_TOKEN;
   const placeholder = `⏳ Fetching ${tool}…`;
@@ -53,7 +53,10 @@ export async function invokeWithLoading(
     return;
   }
 
-  const formatted = formatToolResult(tool, invoked.result, { json: options?.json });
+  const formatted = formatToolResult(tool, invoked.result, {
+    human: options?.human,
+    json: options?.json,
+  });
   if (formatted.kind === "html") {
     await deliver(formatted.text, "HTML");
     return;

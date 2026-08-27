@@ -117,7 +117,7 @@ export function formatGovernance(result: unknown): string | undefined {
     lines.push(proposalLine(item));
   }
   if (items.length > cap) {
-    lines.push(escapeHtml(`…and ${items.length - cap} more — use --json for the rest`));
+    lines.push(escapeHtml(`…and ${items.length - cap} more — omit --human for the rest`));
   }
   return lines.length > 1 ? lines.join("\n") : undefined;
 }

@@ -15,6 +15,14 @@ describe("parseCallArgs", () => {
     expect(parsed.tool).toBe("get_token_balance");
     expect(parsed.params).toEqual({ token: "CELO", address: "0xabc" });
     expect(parsed.json).toBe(true);
+    expect(parsed.human).toBe(false);
+  });
+
+  it("parses --human", () => {
+    const parsed = parseCallArgs("get_network_status --human");
+    expect(parsed.tool).toBe("get_network_status");
+    expect(parsed.human).toBe(true);
+    expect(parsed.json).toBe(false);
   });
 
   it("parses a JSON object body", () => {
@@ -23,6 +31,7 @@ describe("parseCallArgs", () => {
     );
     expect(parsed.params).toEqual({ token: "CELO", address: "0xabc" });
     expect(parsed.json).toBe(false);
+    expect(parsed.human).toBe(false);
   });
 
   it("stringifies numbers in a JSON object body", () => {
@@ -30,10 +39,15 @@ describe("parseCallArgs", () => {
     expect(parsed.params).toEqual({ amount: "23", token_in: "CELO" });
   });
 
-  it("treats json=1 as the escape hatch", () => {
+  it("treats json=1 as the JSON no-op", () => {
     const parsed = parseCallArgs("get_network_status json=1");
     expect(parsed.tool).toBe("get_network_status");
     expect(parsed.json).toBe(true);
+  });
+
+  it("treats human=1 as labeled chat text", () => {
+    const parsed = parseCallArgs("get_network_status human=1");
+    expect(parsed.human).toBe(true);
   });
 
   it("errors when the tool name is missing", () => {
@@ -43,7 +57,7 @@ describe("parseCallArgs", () => {
 
 describe("parseParamsText", () => {
   it("returns empty params for blank input", () => {
-    expect(parseParamsText("")).toEqual({ params: {}, json: false });
+    expect(parseParamsText("")).toEqual({ params: {}, json: false, human: false });
   });
 
   it("keeps key=value scalars as strings", () => {

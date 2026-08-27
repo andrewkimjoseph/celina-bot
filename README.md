@@ -18,7 +18,7 @@ Suggested production host: `https://bot.usecelina.xyz`
 |---------|----------------|
 | `/start` | Welcome + shortcut keyboard |
 | `/tools` | Browse tools by category (tap to run or fill params) |
-| `/call <tool> [json \| key=value …]` | Power-user invoke |
+| `/call <tool> [key=value …] [--human]` | Power-user invoke |
 | `/setaddress 0x…` | Save a default wallet for `address` / `from` fields |
 | `/clearaddress` | Forget the saved wallet |
 | `/whoami` | Show the saved wallet |
@@ -26,7 +26,7 @@ Suggested production host: `https://bot.usecelina.xyz`
 | `/cancel` | Abort a param prompt |
 | `/<alias>` | Generated short name for each catalog tool (e.g. `/network`, `/balance`) |
 
-Add `--json` (or `json=1`) to `/call` for the raw payload. Oversized JSON is sent as a file, not truncated.
+Successful tool replies are pretty JSON by default (`<pre>` in chat, or a `.json` file when the payload is large). Add `--human` (or `human=1`) for labeled chat text. `--json` is still accepted and keeps JSON.
 
 Shortcut keyboard after `/start`: Tools, Balance, Gov, Network.
 

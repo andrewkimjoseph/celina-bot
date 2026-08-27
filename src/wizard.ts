@@ -28,6 +28,7 @@ export async function promptNextField(
   if (!next) {
     await clearWizardState(env, chatId);
     await invokeWithLoading(env, { chatId }, state.tool, state.collected, {
+      human: state.human,
       json: state.json,
     });
     return;
@@ -65,17 +66,19 @@ export async function startWizard(
   chatId: number,
   tool: ToolMeta,
   collected: Record<string, unknown>,
-  options?: { json?: boolean; saved?: string },
+  options?: { human?: boolean; json?: boolean; saved?: string },
 ): Promise<void> {
   const remaining = fieldQueue(tool, collected);
   const state: WizardState = {
     tool: tool.name,
     collected,
     remaining,
+    human: options?.human,
     json: options?.json,
   };
   if (remaining.length === 0) {
     await invokeWithLoading(env, { chatId }, tool.name, collected, {
+      human: options?.human,
       json: options?.json,
     });
     return;
