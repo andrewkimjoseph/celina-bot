@@ -1,3 +1,4 @@
+import { sanitizeCatalogDescription } from "./catalog-copy.js";
 import type { ToolMeta } from "./celina-api.js";
 import type { BotEnv } from "./env.js";
 import { code, escapeHtml } from "./format/escape.js";
@@ -44,7 +45,10 @@ export async function promptNextField(
   const lines = [
     `Send the ${code(next)} for ${code(tool.name)}`,
   ];
-  if (input?.description) lines.push(escapeHtml(input.description));
+  const description = input?.description
+    ? sanitizeCatalogDescription(input.description)
+    : "";
+  if (description) lines.push(escapeHtml(description));
   if (input?.type) lines.push(`Type: ${escapeHtml(input.type)}`);
   if (!required) lines.push("Optional — tap Skip to leave it unset.");
   const note = usingSavedNote(tool, state.collected, saved);

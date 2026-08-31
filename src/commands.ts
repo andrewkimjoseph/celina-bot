@@ -1,4 +1,5 @@
 import { getAliasForTool, resolveToolName } from "./aliases.js";
+import { sanitizeCatalogDescription } from "./catalog-copy.js";
 import { findCachedTool, getCachedTools } from "./catalog-cache.js";
 import type { ToolMeta } from "./celina-api.js";
 import { KEYBOARD } from "./constants.js";
@@ -63,7 +64,7 @@ function helpForTool(tool: ToolMeta): string {
   const lines = [
     `<b>${escapeHtml(tool.title)}</b>`,
     code(tool.name),
-    escapeHtml(tool.description),
+    escapeHtml(sanitizeCatalogDescription(tool.description)),
     "",
   ];
   if (tool.inputs.length === 0) {
@@ -72,8 +73,10 @@ function helpForTool(tool: ToolMeta): string {
   }
   for (const input of tool.inputs) {
     const req = input.required ? "required" : "optional";
+    const description = sanitizeCatalogDescription(input.description);
+    const suffix = description ? ` — ${escapeHtml(description)}` : "";
     lines.push(
-      `• ${code(input.name)} (${escapeHtml(input.type)}, ${req}) — ${escapeHtml(input.description)}`,
+      `• ${code(input.name)} (${escapeHtml(input.type)}, ${req})${suffix}`,
     );
   }
   const alias = getAliasForTool(tool.name);
