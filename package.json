@@ -18,7 +18,7 @@
     "hono": "^4.9.6"
   },
   "devDependencies": {
-    "@andrewkimjoseph/celina-sdk": "0.25.19",
+    "@andrewkimjoseph/celina-sdk": "0.25.20",
     "@cloudflare/workers-types": "^5.20260815.1",
     "tsx": "^4.20.3",
     "typescript": "^5.8.2",
