@@ -19,7 +19,7 @@ Suggested production host: `https://bot.usecelina.xyz`
 | `/start` | Welcome + shortcut keyboard |
 | `/tools` | Browse tools by category (tap to run or fill params) |
 | `/call <tool> [key=value …] [--human]` | Power-user invoke |
-| `/setaddress 0x…` | Save a default wallet for `address` / `from` fields |
+| `/setaddress 0x…` | Save a default wallet (`address` / `from`). Or send `/setaddress` then the address as the next message. |
 | `/clearaddress` | Forget the saved wallet |
 | `/whoami` | Show the saved wallet |
 | `/help` / `/help <tool>` | Commands, or one tool's inputs |

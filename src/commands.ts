@@ -15,10 +15,13 @@ import {
 import { parseAddress, parseCallArgs, parseParamsText } from "./parse-args.js";
 import { applySavedAddress, missingRequiredFields } from "./params.js";
 import {
+  clearPendingSetAddress,
   clearSavedAddress,
   clearWizardState,
   getSavedAddress,
   getWizardState,
+  isPendingSetAddress,
+  putPendingSetAddress,
   putSavedAddress,
 } from "./session.js";
 import {
@@ -183,20 +186,21 @@ export async function handleCall(
   });
 }
 
-export async function handleSetAddress(
+const SET_ADDRESS_PROMPT = "Send a Celo address (0x + 40 hex characters).";
+
+async function promptForSetAddress(env: BotEnv, chatId: number): Promise<void> {
+  await putPendingSetAddress(env, chatId);
+  await sendMessage(env.TELEGRAM_BOT_TOKEN, chatId, SET_ADDRESS_PROMPT, {
+    replyMarkup: { force_reply: true, selective: true },
+  });
+}
+
+async function saveDefaultAddress(
   env: BotEnv,
   chatId: number,
-  args: string,
+  address: string,
 ): Promise<void> {
-  const address = parseAddress(args);
-  if (!address) {
-    await sendMessage(
-      env.TELEGRAM_BOT_TOKEN,
-      chatId,
-      "Usage: /setaddress 0x followed by 40 hex characters.",
-    );
-    return;
-  }
+  await clearPendingSetAddress(env, chatId);
   await putSavedAddress(env, chatId, address);
   await sendMessage(
     env.TELEGRAM_BOT_TOKEN,
@@ -204,6 +208,19 @@ export async function handleSetAddress(
     `Saved ${code(shortenAddress(address))} as your default wallet.`,
     { parseMode: "HTML" },
   );
+}
+
+export async function handleSetAddress(
+  env: BotEnv,
+  chatId: number,
+  args: string,
+): Promise<void> {
+  const address = parseAddress(args);
+  if (!address) {
+    await promptForSetAddress(env, chatId);
+    return;
+  }
+  await saveDefaultAddress(env, chatId, address);
 }
 
 export async function handleClearAddress(env: BotEnv, chatId: number): Promise<void> {
@@ -217,7 +234,7 @@ export async function handleWhoami(env: BotEnv, chatId: number): Promise<void> {
     await sendMessage(
       env.TELEGRAM_BOT_TOKEN,
       chatId,
-      "No saved wallet. Use /setaddress 0x…",
+      "No saved wallet. Send /setaddress then the address.",
     );
     return;
   }
@@ -258,6 +275,16 @@ export async function handleTextMessage(
     }
     const saved = await getSavedAddress(env, chatId);
     await handleWizardAnswer(env, chatId, tool, text, saved);
+    return;
+  }
+
+  if (!parsed && (await isPendingSetAddress(env, chatId))) {
+    const address = parseAddress(text);
+    if (!address) {
+      await promptForSetAddress(env, chatId);
+      return;
+    }
+    await saveDefaultAddress(env, chatId, address);
     return;
   }
 

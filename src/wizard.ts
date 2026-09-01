@@ -7,6 +7,7 @@ import { skipKeyboard } from "./keyboards.js";
 import { coerceWizardValue } from "./parse-args.js";
 import { fieldQueue, usingSavedNote } from "./params.js";
 import {
+  clearPendingSetAddress,
   clearWizardState,
   getWizardState,
   putWizardState,
@@ -146,5 +147,6 @@ export async function handleWizardSkip(
 
 export async function cancelWizard(env: BotEnv, chatId: number): Promise<void> {
   await clearWizardState(env, chatId);
+  await clearPendingSetAddress(env, chatId);
   await sendMessage(env.TELEGRAM_BOT_TOKEN, chatId, "Cancelled.");
 }

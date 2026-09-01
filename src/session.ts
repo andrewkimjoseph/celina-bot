@@ -18,6 +18,10 @@ function addressKey(chatId: number): string {
   return `address:${chatId}`;
 }
 
+function setAddressPromptKey(chatId: number): string {
+  return `setaddress:${chatId}`;
+}
+
 export async function getWizardState(
   env: BotEnv,
   chatId: number,
@@ -63,4 +67,22 @@ export async function putSavedAddress(
 
 export async function clearSavedAddress(env: BotEnv, chatId: number): Promise<void> {
   await env.SESSIONS.delete(addressKey(chatId));
+}
+
+export async function isPendingSetAddress(
+  env: BotEnv,
+  chatId: number,
+): Promise<boolean> {
+  const raw = await env.SESSIONS.get(setAddressPromptKey(chatId));
+  return raw != null;
+}
+
+export async function putPendingSetAddress(env: BotEnv, chatId: number): Promise<void> {
+  await env.SESSIONS.put(setAddressPromptKey(chatId), "1", {
+    expirationTtl: WIZARD_TTL_SECONDS,
+  });
+}
+
+export async function clearPendingSetAddress(env: BotEnv, chatId: number): Promise<void> {
+  await env.SESSIONS.delete(setAddressPromptKey(chatId));
 }
