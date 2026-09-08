@@ -38,6 +38,9 @@ export const TELEGRAM_TEXT_LIMIT = 4096;
 
 export const BOT_USERNAME = "thecelinabot";
 
+/** Amplitude / `X-Celina-Client` device id (underscore, matching `celina_api`). */
+export const CELINA_CLIENT_ID = "celina_bot";
+
 /** BotFather About / Telegram `setMyShortDescription` (max 120). */
 export const BOT_ABOUT =
   "Read-only Celo mainnet tools — balances, quotes, governance. No keys, no signing.";

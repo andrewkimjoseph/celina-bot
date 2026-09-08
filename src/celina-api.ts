@@ -1,3 +1,4 @@
+import { CELINA_CLIENT_ID } from "./constants.js";
 import { DEFAULT_CELINA_API_BASE_URL, type BotEnv } from "./env.js";
 
 export type ToolInput = {
@@ -23,6 +24,10 @@ export function apiBase(env: BotEnv): string {
   return (env.CELINA_API_BASE_URL ?? DEFAULT_CELINA_API_BASE_URL).replace(/\/$/, "");
 }
 
+function clientHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { "X-Celina-Client": CELINA_CLIENT_ID, ...extra };
+}
+
 async function readJson(res: Response): Promise<unknown> {
   const text = await res.text();
   if (!text) return {};
@@ -34,7 +39,9 @@ async function readJson(res: Response): Promise<unknown> {
 }
 
 export async function listTools(env: BotEnv): Promise<ToolMeta[]> {
-  const res = await fetch(`${apiBase(env)}/v1/tools`);
+  const res = await fetch(`${apiBase(env)}/v1/tools`, {
+    headers: clientHeaders(),
+  });
   const body = (await readJson(res)) as { tools?: ToolMeta[]; error?: string };
   if (!res.ok) {
     throw new Error(body.error ?? `Failed to list tools (${res.status})`);
@@ -43,7 +50,9 @@ export async function listTools(env: BotEnv): Promise<ToolMeta[]> {
 }
 
 export async function getTool(env: BotEnv, name: string): Promise<ToolMeta | undefined> {
-  const res = await fetch(`${apiBase(env)}/v1/${encodeURIComponent(name)}`);
+  const res = await fetch(`${apiBase(env)}/v1/${encodeURIComponent(name)}`, {
+    headers: clientHeaders(),
+  });
   if (res.status === 404) return undefined;
   const body = (await readJson(res)) as ToolMeta & { error?: string };
   if (!res.ok) {
@@ -59,7 +68,7 @@ export async function invokeTool(
 ): Promise<{ ok: true; result: unknown } | { ok: false; error: string; status: number }> {
   const res = await fetch(`${apiBase(env)}/v1/${encodeURIComponent(name)}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: clientHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(params),
   });
   const body = (await readJson(res)) as { error?: string } & Record<string, unknown>;
