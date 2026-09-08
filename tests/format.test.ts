@@ -12,8 +12,10 @@ describe("formatToolResult", () => {
     });
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
-    expect(reply.text).toContain("Network status");
+    expect(reply.text).toContain("<b>Network status</b>");
+    expect(reply.text).toContain("<b>Network</b>");
     expect(reply.text).toContain("mainnet");
+    expect(reply.text).toContain("<b>Chain ID</b>");
     expect(reply.text).toContain("42220");
     expect(reply.text).toContain("123");
     expect(reply.text).not.toContain("<pre>");
@@ -40,9 +42,27 @@ describe("formatToolResult", () => {
     });
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
-    expect(reply.text).toContain("USDm");
+    expect(reply.text).toContain("<b>USDm</b>");
     expect(reply.text).toContain("10.5");
     expect(reply.text).not.toContain("USDT");
+  });
+
+  it("formats account fields with bold labels", () => {
+    const reply = formatToolResult("get_account", {
+      address: "0x68961aC3376fa6c2aa20689307Be57f107031B31",
+      balanceCelo: "19.25",
+      nonce: 537,
+      isContract: false,
+    });
+    expect(reply.kind).toBe("html");
+    if (reply.kind !== "html") return;
+    expect(reply.text).toContain("<b>Account</b>");
+    expect(reply.text).toContain("<b>CELO</b>");
+    expect(reply.text).toContain("<b>Nonce</b>");
+    expect(reply.text).toContain("537");
+    expect(reply.text).toContain("<b>Contract</b>");
+    expect(reply.text).not.toContain("yes");
+    expect(reply.text).toContain("no");
   });
 
   it("shows the empty governance message", () => {
@@ -80,6 +100,7 @@ describe("formatToolResult", () => {
     });
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
+    expect(reply.text).toContain("<b>Hops</b>");
     expect(reply.text).toContain("CELO");
     expect(reply.text).toContain("USDm");
     expect(reply.text).toContain("10");
@@ -153,7 +174,7 @@ describe("formatToolResult", () => {
     });
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
-    expect(reply.text).toContain("Network");
+    expect(reply.text).toContain("<b>Network</b>");
     expect(reply.text).toContain("mainnet");
   });
 
@@ -171,7 +192,10 @@ describe("formatToolResult", () => {
     if (reply.kind !== "summary_document") return;
     expect(reply.summaryHtml.length).toBeLessThan(FORMATTED_SOFT_LIMIT);
     expect(reply.summaryHtml).toContain("Nested details omitted — full JSON attached");
+    expect(reply.summaryHtml).toContain("<b>Address</b>");
+    expect(reply.summaryHtml).toContain("<b>Rank Score</b>");
     expect(reply.summaryHtml).toContain("59.5");
+    expect(reply.summaryHtml).not.toContain("<b>Rank Score</b>: 59.5</b>");
     expect(reply.body).toContain("onchain");
     expect(reply.body).toContain("19.5");
     expect(reply.filename).toBe("get_agentkarma_reputation.json");

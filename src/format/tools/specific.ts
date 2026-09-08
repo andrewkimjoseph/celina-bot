@@ -1,4 +1,4 @@
-import { bold, code, escapeHtml, shortenAddress } from "../escape.js";
+import { bold, code, escapeHtml, labeled, shortenAddress } from "../escape.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -11,10 +11,10 @@ export function formatNetworkStatus(result: unknown): string | undefined {
   const block = result.blockNumber ?? result.block_number ?? result.latestBlock;
   const gas = result.gasPriceWei ?? result.gas_price_wei ?? result.gasPrice;
   const lines = [bold("Network status")];
-  if (network !== undefined) lines.push(`Network: ${escapeHtml(String(network))}`);
-  if (chainId !== undefined) lines.push(`Chain ID: ${escapeHtml(String(chainId))}`);
-  if (block !== undefined) lines.push(`Latest block: ${code(String(block))}`);
-  if (gas !== undefined) lines.push(`Gas: ${escapeHtml(String(gas))} wei`);
+  if (network !== undefined) lines.push(labeled("Network", String(network)));
+  if (chainId !== undefined) lines.push(labeled("Chain ID", String(chainId)));
+  if (block !== undefined) lines.push(labeled("Latest block", String(block), { code: true }));
+  if (gas !== undefined) lines.push(labeled("Gas", `${String(gas)} wei`));
   return lines.length > 1 ? lines.join("\n") : undefined;
 }
 
@@ -25,7 +25,7 @@ function formatBalanceLine(item: Record<string, unknown>): string | undefined {
   if (!symbol && formatted === undefined) return undefined;
   const amount = formatted !== undefined ? String(formatted) : String(raw ?? "0");
   if (amount === "0" || amount === "0.0") return undefined;
-  return `${escapeHtml(symbol || "token")}: ${code(amount)}`;
+  return labeled(symbol || "token", amount, { code: true });
 }
 
 export function formatBalanceList(result: unknown): string | undefined {
@@ -55,7 +55,7 @@ export function formatBalanceList(result: unknown): string | undefined {
   if (result.formatted !== undefined || result.symbol !== undefined) {
     const symbol = String(result.symbol ?? result.token ?? "token");
     const amount = String(result.formatted ?? result.raw ?? "");
-    heading.push(`${escapeHtml(symbol)}: ${code(amount)}`);
+    heading.push(labeled(symbol, amount, { code: true }));
     return heading.join("\n");
   }
   return undefined;
@@ -74,13 +74,13 @@ export function formatQuote(result: unknown): string | undefined {
     `${code(String(amountIn ?? "?"))} ${escapeHtml(String(tokenIn))} → ${code(String(expectedOut ?? "?"))} ${escapeHtml(String(tokenOut))}`,
   ];
   if (result.routeHops !== undefined) {
-    lines.push(`Hops: ${escapeHtml(String(result.routeHops))}`);
+    lines.push(labeled("Hops", String(result.routeHops)));
   }
   if (result.slippageTolerance !== undefined) {
-    lines.push(`Slippage: ${escapeHtml(String(result.slippageTolerance))}`);
+    lines.push(labeled("Slippage", String(result.slippageTolerance)));
   }
   if (result.amountSide !== undefined) {
-    lines.push(`Amount side: ${escapeHtml(String(result.amountSide))}`);
+    lines.push(labeled("Amount side", String(result.amountSide)));
   }
   return lines.join("\n");
 }
@@ -128,7 +128,7 @@ export function formatEns(result: unknown): string | undefined {
     bold("ENS"),
     `${code(String(name))} → ${code(String(address))}`,
   ];
-  if (chain !== undefined) lines.push(`Chain: ${escapeHtml(String(chain))}`);
+  if (chain !== undefined) lines.push(labeled("Chain", String(chain)));
   return lines.join("\n");
 }
 
@@ -140,13 +140,13 @@ export function formatAccount(result: unknown): string | undefined {
   const lines = [bold("Account")];
   if (typeof result.address === "string") lines.push(code(result.address));
   if (result.balanceCelo !== undefined) {
-    lines.push(`CELO: ${code(String(result.balanceCelo))}`);
+    lines.push(labeled("CELO", String(result.balanceCelo), { code: true }));
   } else if (result.balanceWei !== undefined) {
-    lines.push(`Balance: ${code(String(result.balanceWei))} wei`);
+    lines.push(labeled("Balance", `${String(result.balanceWei)} wei`));
   }
-  if (result.nonce !== undefined) lines.push(`Nonce: ${escapeHtml(String(result.nonce))}`);
+  if (result.nonce !== undefined) lines.push(labeled("Nonce", String(result.nonce)));
   if (typeof result.isContract === "boolean") {
-    lines.push(`Contract: ${result.isContract ? "yes" : "no"}`);
+    lines.push(labeled("Contract", result.isContract ? "yes" : "no"));
   }
   return lines.join("\n");
 }

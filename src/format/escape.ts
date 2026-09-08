@@ -59,6 +59,15 @@ export function pre(text: string): string {
   return `<pre>${escapeHtml(text)}</pre>`;
 }
 
+export function labeled(label: string, value: string, options?: { code?: boolean }): string {
+  const display = options?.code ? code(value) : escapeHtml(value);
+  return `${bold(label)}: ${display}`;
+}
+
+export function isAddressLike(value: unknown): boolean {
+  return typeof value === "string" && /^0x[a-fA-F0-9]{40}$/.test(value);
+}
+
 export function labelize(key: string): string {
   return key
     .replace(/_/g, " ")

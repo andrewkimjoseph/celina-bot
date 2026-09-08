@@ -1,4 +1,4 @@
-import { escapeHtml, labelize } from "./escape.js";
+import { escapeHtml, isAddressLike, labeled, labelize } from "./escape.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -81,7 +81,9 @@ function formatShallowObject(obj: Record<string, unknown>): string {
     const picked = preferFormattedValue(key, value, obj);
     if (picked === undefined) continue;
     if (!isScalar(picked)) continue;
-    lines.push(`${escapeHtml(labelize(key))}: ${escapeHtml(formatScalar(picked))}`);
+    lines.push(
+      labeled(labelize(key), formatScalar(picked), { code: isAddressLike(picked) }),
+    );
   }
   return lines.join("\n");
 }
