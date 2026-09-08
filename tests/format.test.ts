@@ -156,4 +156,25 @@ describe("formatToolResult", () => {
     expect(reply.text).toContain("Network");
     expect(reply.text).toContain("mainnet");
   });
+
+  it("attaches JSON when nested details are omitted even if the summary is short", () => {
+    const reply = formatToolResult("get_agentkarma_reputation", {
+      address: "0x68961ac3376fa6c2aa20689307be57f107031b31",
+      chain: "celo",
+      face: "both",
+      txCount: 0,
+      lastActive: "2026-06-11T13:27:31.238+00:00",
+      rankScore: 59.5,
+      breakdown: { onchain: 40, identity: 19.5 },
+    });
+    expect(reply.kind).toBe("summary_document");
+    if (reply.kind !== "summary_document") return;
+    expect(reply.summaryHtml.length).toBeLessThan(FORMATTED_SOFT_LIMIT);
+    expect(reply.summaryHtml).toContain("Nested details omitted — full JSON attached");
+    expect(reply.summaryHtml).toContain("59.5");
+    expect(reply.body).toContain("onchain");
+    expect(reply.body).toContain("19.5");
+    expect(reply.filename).toBe("get_agentkarma_reputation.json");
+    expect(reply.caption).toMatch(/Full JSON/);
+  });
 });

@@ -83,12 +83,14 @@ export function formatToolResult(
   }
 
   const specific = TOOL_FORMATTERS[tool]?.(result);
-  const heuristic = specific ?? formatByShape(result);
-  if (heuristic) {
-    if (heuristic.length <= FORMATTED_SOFT_LIMIT) {
-      return { kind: "html", text: finalizeFormattedHtml(heuristic) };
+  const shaped = specific
+    ? { html: specific, incomplete: false }
+    : formatByShape(result);
+  if (shaped) {
+    if (shaped.html.length > FORMATTED_SOFT_LIMIT || shaped.incomplete) {
+      return summaryDocument(tool, shaped.html, result);
     }
-    return summaryDocument(tool, heuristic, result);
+    return { kind: "html", text: finalizeFormattedHtml(shaped.html) };
   }
 
   return jsonReply(tool, result);

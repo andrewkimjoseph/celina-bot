@@ -86,14 +86,20 @@ function formatShallowObject(obj: Record<string, unknown>): string {
   return lines.join("\n");
 }
 
-export function formatByShape(result: unknown): string | undefined {
+export type ShapeFormat = { html: string; incomplete: boolean };
+
+function complete(html: string): ShapeFormat {
+  return { html, incomplete: false };
+}
+
+export function formatByShape(result: unknown): ShapeFormat | undefined {
   if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
-    return escapeHtml(formatScalar(result));
+    return complete(escapeHtml(formatScalar(result)));
   }
   if (Array.isArray(result)) {
-    if (result.length === 0) return "No items.";
+    if (result.length === 0) return complete("No items.");
     if (result.every(isRecord) && result.some((item) => pickId(item) || pickTitle(item))) {
-      return formatListItems(result);
+      return complete(formatListItems(result));
     }
     return undefined;
   }
@@ -106,14 +112,14 @@ export function formatByShape(result: unknown): string | undefined {
       (value) => !Array.isArray(value) || value.length === 0,
     );
   if (typeof result.message === "string" && emptyLists) {
-    return escapeHtml(result.message);
+    return complete(escapeHtml(result.message));
   }
 
   if (Array.isArray(list) && list.length > 0 && list.every(isRecord)) {
     const heading =
       typeof result.message === "string" ? `${escapeHtml(result.message)}\n` : "";
     const body = formatListItems(list);
-    if (body) return `${heading}${body}`.trim();
+    if (body) return complete(`${heading}${body}`.trim());
   }
 
   const scalarKeys = Object.entries(result).filter(([, value]) => isScalar(value));
@@ -121,13 +127,16 @@ export function formatByShape(result: unknown): string | undefined {
     ([, value]) => !isScalar(value) && value !== undefined,
   );
   if (scalarKeys.length > 0 && scalarKeys.length <= 12 && nestedKeys.length === 0) {
-    return formatShallowObject(result);
+    return complete(formatShallowObject(result));
   }
   if (scalarKeys.length > 0 && nestedKeys.length > 0 && scalarKeys.length <= 12) {
     const summary = formatShallowObject(
       Object.fromEntries(scalarKeys) as Record<string, unknown>,
     );
-    return `${summary}\n${escapeHtml("Nested details omitted — full JSON attached")}`;
+    return {
+      html: `${summary}\n${escapeHtml("Nested details omitted — full JSON attached")}`,
+      incomplete: true,
+    };
   }
 
   return undefined;
