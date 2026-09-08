@@ -112,12 +112,8 @@ export function formatGovernance(result: unknown): string | undefined {
   }
   const lines = [bold("Governance")];
   if (typeof result.message === "string") lines.push(escapeHtml(result.message));
-  const cap = 8;
-  for (const item of items.slice(0, cap)) {
+  for (const item of items) {
     lines.push(proposalLine(item));
-  }
-  if (items.length > cap) {
-    lines.push(escapeHtml(`…and ${items.length - cap} more — omit --human for the rest`));
   }
   return lines.length > 1 ? lines.join("\n") : undefined;
 }

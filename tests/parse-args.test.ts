@@ -39,7 +39,7 @@ describe("parseCallArgs", () => {
     expect(parsed.params).toEqual({ amount: "23", token_in: "CELO" });
   });
 
-  it("treats json=1 as the JSON no-op", () => {
+  it("treats json=1 as JSON opt-out", () => {
     const parsed = parseCallArgs("get_network_status json=1");
     expect(parsed.tool).toBe("get_network_status");
     expect(parsed.json).toBe(true);
@@ -51,7 +51,7 @@ describe("parseCallArgs", () => {
   });
 
   it("errors when the tool name is missing", () => {
-    expect(parseCallArgs("").error).toMatch(/Usage/);
+    expect(parseCallArgs("").error).toMatch(/\[--json\]/);
   });
 });
 

@@ -1,7 +1,5 @@
 import { escapeHtml, labelize } from "./escape.js";
 
-const LIST_CAP = 8;
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -49,19 +47,15 @@ function listFields(obj: Record<string, unknown>): unknown[] | undefined {
 
 function formatListItems(items: unknown[]): string {
   const objects = items.filter(isRecord);
-  const lines = objects.slice(0, LIST_CAP).map((item) => {
-    const id = pickId(item);
-    const title = pickTitle(item);
-    const stage = typeof item.stage === "string" ? item.stage : undefined;
-    const parts = [id ? `#${id}` : undefined, title, stage].filter(Boolean);
-    return `• ${escapeHtml(parts.join(" — ") || JSON.stringify(item))}`;
-  });
-  if (objects.length > LIST_CAP) {
-    lines.push(
-      escapeHtml(`…and ${objects.length - LIST_CAP} more — omit --human for the rest`),
-    );
-  }
-  return lines.join("\n");
+  return objects
+    .map((item) => {
+      const id = pickId(item);
+      const title = pickTitle(item);
+      const stage = typeof item.stage === "string" ? item.stage : undefined;
+      const parts = [id ? `#${id}` : undefined, title, stage].filter(Boolean);
+      return `• ${escapeHtml(parts.join(" — ") || JSON.stringify(item))}`;
+    })
+    .join("\n");
 }
 
 function preferFormattedValue(
@@ -133,7 +127,7 @@ export function formatByShape(result: unknown): string | undefined {
     const summary = formatShallowObject(
       Object.fromEntries(scalarKeys) as Record<string, unknown>,
     );
-    return `${summary}\n${escapeHtml("Nested details omitted — omit --human for JSON")}`;
+    return `${summary}\n${escapeHtml("Nested details omitted — full JSON attached")}`;
   }
 
   return undefined;

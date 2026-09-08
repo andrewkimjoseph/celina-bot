@@ -62,14 +62,14 @@ export async function invokeWithLoading(
     return;
   }
 
-  const captionEdited = await editMessageText(
-    token,
-    target.chatId,
-    messageId!,
-    formatted.caption,
-  );
-  if (!captionEdited) {
-    await sendMessage(token, target.chatId, formatted.caption);
+  const summary =
+    formatted.kind === "summary_document" ? formatted.summaryHtml : formatted.caption;
+  const parseMode = formatted.kind === "summary_document" ? ("HTML" as const) : undefined;
+  const ok = await editMessageText(token, target.chatId, messageId!, summary, {
+    parseMode,
+  });
+  if (!ok) {
+    await sendMessage(token, target.chatId, summary, { parseMode });
   }
   await sendDocument(
     token,

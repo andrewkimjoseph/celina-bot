@@ -124,7 +124,7 @@ export function parseCallArgs(text: string): ParsedCall {
       params: {},
       json: false,
       human: false,
-      error: "Usage: /call <tool> [key=value …] [--human]",
+      error: "Usage: /call <tool> [key=value …] [--json]",
     };
   }
   const [tool, ...rest] = trimmed.split(/\s+/);
@@ -133,7 +133,7 @@ export function parseCallArgs(text: string): ParsedCall {
       params: {},
       json: false,
       human: false,
-      error: "Usage: /call <tool> [key=value …] [--human]",
+      error: "Usage: /call <tool> [key=value …] [--json]",
     };
   }
   const { params, json, human } = parseParamsText(rest.join(" "));

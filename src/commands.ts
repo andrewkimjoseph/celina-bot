@@ -60,7 +60,7 @@ const HELP_TEXT = [
   "/cancel — abort a prompt",
   "/help &lt;tool&gt; — inputs for one tool",
   "",
-  "Replies are pretty JSON. Add <code>--human</code> for labeled chat text. Large payloads attach as a .json file.",
+  "Replies are labeled chat text. Large results come as a summary plus a .json file. Add <code>--json</code> for raw JSON.",
 ].join("\n");
 
 function helpForTool(tool: ToolMeta): string {
@@ -175,7 +175,7 @@ export async function handleCall(
     await sendMessage(
       env.TELEGRAM_BOT_TOKEN,
       chatId,
-      parsed.error ?? "Usage: /call <tool> [key=value …] [--human]",
+      parsed.error ?? "Usage: /call <tool> [key=value …] [--json]",
     );
     return;
   }

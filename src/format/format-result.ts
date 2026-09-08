@@ -17,7 +17,14 @@ import {
 
 export type FormattedReply =
   | { kind: "html"; text: string }
-  | { kind: "document"; filename: string; body: string; caption: string };
+  | { kind: "document"; filename: string; body: string; caption: string }
+  | {
+      kind: "summary_document";
+      summaryHtml: string;
+      filename: string;
+      body: string;
+      caption: string;
+    };
 
 type ToolFormatter = (result: unknown) => string | undefined;
 
@@ -55,19 +62,33 @@ function jsonReply(tool: string, result: unknown): FormattedReply {
   return jsonDocument(tool, pretty);
 }
 
+function summaryDocument(tool: string, humanHtml: string, result: unknown): FormattedReply {
+  const pretty = JSON.stringify(result, null, 2);
+  return {
+    kind: "summary_document",
+    summaryHtml: finalizeFormattedHtml(humanHtml),
+    filename: `${tool}.json`,
+    body: pretty,
+    caption: `Full JSON (${formatBytes(pretty.length)}) — ${tool}`,
+  };
+}
+
 export function formatToolResult(
   tool: string,
   result: unknown,
   options?: { json?: boolean; human?: boolean },
 ): FormattedReply {
-  if (options?.json || !options?.human) {
+  if (options?.json) {
     return jsonReply(tool, result);
   }
 
   const specific = TOOL_FORMATTERS[tool]?.(result);
   const heuristic = specific ?? formatByShape(result);
   if (heuristic) {
-    return { kind: "html", text: finalizeFormattedHtml(heuristic) };
+    if (heuristic.length <= FORMATTED_SOFT_LIMIT) {
+      return { kind: "html", text: finalizeFormattedHtml(heuristic) };
+    }
+    return summaryDocument(tool, heuristic, result);
   }
 
   return jsonReply(tool, result);
