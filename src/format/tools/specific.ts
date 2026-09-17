@@ -1,4 +1,5 @@
 import { bold, code, escapeHtml, labeled, shortenAddress } from "../escape.js";
+import { punctuateSentence } from "../shapes.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -108,7 +109,7 @@ export function formatGovernance(result: unknown): string | undefined {
     : [];
   const items = [...queued, ...referendum, ...proposals];
   if (items.length === 0 && typeof result.message === "string") {
-    return escapeHtml(result.message);
+    return escapeHtml(punctuateSentence(result.message));
   }
   const lines = [bold("Governance")];
   if (typeof result.message === "string") lines.push(escapeHtml(result.message));

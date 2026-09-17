@@ -73,7 +73,33 @@ describe("formatToolResult", () => {
     });
     expect(reply.kind).toBe("html");
     if (reply.kind !== "html") return;
-    expect(reply.text).toContain("No actionable proposals");
+    expect(reply.text).toContain("No actionable proposals.");
+  });
+
+  it("punctuates an empty get_governance_votes sentence", () => {
+    const reply = formatToolResult("get_governance_votes", {
+      referendumVotes: [],
+      upvote: null,
+      message: "No governance votes found for this address",
+    });
+    expect(reply.kind).toBe("html");
+    if (reply.kind !== "html") return;
+    expect(reply.text).toContain("No governance votes found for this address.");
+    expect(reply.text).not.toContain("No governance votes found for this address..");
+  });
+
+  it("does not punctuate a get_governance_votes list heading", () => {
+    const reply = formatToolResult("get_governance_votes", {
+      referendumVotes: [
+        { proposalId: 99, title: "CGP-99", stage: "Referendum" },
+      ],
+      message: "1 referendum vote(s)",
+    });
+    expect(reply.kind).toBe("html");
+    if (reply.kind !== "html") return;
+    expect(reply.text).toContain("1 referendum vote(s)");
+    expect(reply.text).not.toContain("1 referendum vote(s).");
+    expect(reply.text).toContain("CGP-99");
   });
 
   it("formats the full governance list without a hard cap", () => {
