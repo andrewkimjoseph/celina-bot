@@ -94,14 +94,6 @@ function complete(html: string): ShapeFormat {
   return { html, incomplete: false };
 }
 
-/** Period only on empty-state sentences, not list-heading fragments. */
-export function punctuateSentence(text: string): string {
-  const trimmed = text.trim();
-  if (/[.!?]$/.test(trimmed)) return trimmed;
-  if (!/^[A-Z]/.test(trimmed) || !trimmed.includes(" ")) return trimmed;
-  return `${trimmed}.`;
-}
-
 export function formatByShape(result: unknown): ShapeFormat | undefined {
   if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
     return complete(escapeHtml(formatScalar(result)));
@@ -122,7 +114,7 @@ export function formatByShape(result: unknown): ShapeFormat | undefined {
       (value) => !Array.isArray(value) || value.length === 0,
     );
   if (typeof result.message === "string" && emptyLists) {
-    return complete(escapeHtml(punctuateSentence(result.message)));
+    return complete(escapeHtml(result.message));
   }
 
   if (Array.isArray(list) && list.length > 0 && list.every(isRecord)) {
