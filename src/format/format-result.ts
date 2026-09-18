@@ -13,6 +13,7 @@ import {
   formatGovernance,
   formatNetworkStatus,
   formatQuote,
+  formatSwapPairs,
 } from "./tools/specific.js";
 
 export type FormattedReply =
@@ -35,7 +36,9 @@ const TOOL_FORMATTERS: Record<string, ToolFormatter> = {
   get_token_balance: formatBalanceList,
   get_aave_balances: formatBalanceList,
   get_mento_fx_quote: formatQuote,
+  get_mento_swap_pairs: formatSwapPairs,
   get_uniswap_quote: formatQuote,
+  get_uniswap_swap_pairs: formatSwapPairs,
   get_gooddollar_reserve_quote: formatQuote,
   get_actionable_governance_proposals: formatGovernance,
   get_queued_proposals: formatGovernance,

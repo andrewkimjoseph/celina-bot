@@ -107,6 +107,23 @@ describe("formatToolResult", () => {
     expect(reply.text).toContain("4.2");
   });
 
+  it("formats swap pair counterparts", () => {
+    const reply = formatToolResult("get_mento_swap_pairs", {
+      protocol: "mento_fx",
+      token: "EURm",
+      counterparts: ["USDm", "USDC"],
+      pairs: [
+        { token_a: "EURm", token_b: "USDm", hops: 1 },
+        { token_a: "EURm", token_b: "USDC", hops: 2 },
+      ],
+    });
+    expect(reply.kind).toBe("html");
+    if (reply.kind !== "html") return;
+    expect(reply.text).toContain("EURm");
+    expect(reply.text).toContain("USDm");
+    expect(reply.text).not.toContain("CELO");
+  });
+
   it("escapes HTML in dynamic strings", () => {
     const reply = formatToolResult("get_network_status", {
       network: "mainnet <script>",

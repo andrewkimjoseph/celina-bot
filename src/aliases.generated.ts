@@ -88,10 +88,22 @@ export const GENERATED_ALIASES: GeneratedAliasEntry[] = [
     "category": "Blockchain"
   },
   {
+    "tool": "get_mento_swap_pairs",
+    "alias": "mento_swap_pairs",
+    "title": "Get Mento Swap Pairs",
+    "category": "Mento FX"
+  },
+  {
     "tool": "get_mento_fx_quote",
     "alias": "mento_fx_quote",
     "title": "Get Mento FX Quote",
     "category": "Mento FX"
+  },
+  {
+    "tool": "get_uniswap_swap_pairs",
+    "alias": "uniswap_swap_pairs",
+    "title": "Get Uniswap Swap Pairs",
+    "category": "Uniswap"
   },
   {
     "tool": "get_uniswap_quote",

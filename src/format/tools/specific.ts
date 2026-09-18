@@ -85,6 +85,37 @@ export function formatQuote(result: unknown): string | undefined {
   return lines.join("\n");
 }
 
+export function formatSwapPairs(result: unknown): string | undefined {
+  if (!isRecord(result)) return undefined;
+  const protocol = result.protocol ? String(result.protocol).replace(/_/g, " ") : "Pairs";
+  const token = typeof result.token === "string" ? result.token : undefined;
+  const counterparts = Array.isArray(result.counterparts)
+    ? result.counterparts.filter((item): item is string => typeof item === "string")
+    : [];
+  const pairs = Array.isArray(result.pairs) ? result.pairs.filter(isRecord) : [];
+  const lines = [bold(protocol)];
+  if (token) {
+    lines.push(labeled("Token", token));
+  }
+  if (counterparts.length > 0) {
+    lines.push(labeled("Counterparts", counterparts.join(", ")));
+    return lines.join("\n");
+  }
+  if (pairs.length === 0) {
+    lines.push("No pairs.");
+    return lines.join("\n");
+  }
+  for (const pair of pairs.slice(0, 20)) {
+    const a = String(pair.token_a ?? pair.tokenA ?? "?");
+    const b = String(pair.token_b ?? pair.tokenB ?? "?");
+    lines.push(`• ${escapeHtml(a)} ↔ ${escapeHtml(b)}`);
+  }
+  if (pairs.length > 20) {
+    lines.push(`(+${pairs.length - 20} more)`);
+  }
+  return lines.join("\n");
+}
+
 function proposalLine(item: Record<string, unknown>): string {
   const id = item.proposalId ?? item.proposal_id ?? item.id;
   const title = item.title;
