@@ -9,13 +9,52 @@ const secretEnv = {
 describe("HTTP surface", () => {
   const app = createApp();
 
-  it("GET /health", async () => {
-    const res = await app.request("/health");
+  it("GET /health checks the token and session store", async () => {
+    const res = await app.request(
+      "/health",
+      {},
+      {
+        TELEGRAM_BOT_TOKEN: "test-token",
+        SESSIONS: { get: async () => null },
+      },
+    );
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({
       ok: true,
       service: "celina-bot",
+      checks: { telegramToken: true, sessionsKv: true },
     });
+  });
+
+  it("GET /health is 503 without a bot token", async () => {
+    const res = await app.request(
+      "/health",
+      {},
+      { SESSIONS: { get: async () => null } },
+    );
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { ok: boolean; checks: { telegramToken: boolean } };
+    expect(body.ok).toBe(false);
+    expect(body.checks.telegramToken).toBe(false);
+  });
+
+  it("GET /health is 503 when the session store throws", async () => {
+    const res = await app.request(
+      "/health",
+      {},
+      {
+        TELEGRAM_BOT_TOKEN: "test-token",
+        SESSIONS: {
+          get: async () => {
+            throw new Error("kv down");
+          },
+        },
+      },
+    );
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { ok: boolean; checks: { sessionsKv: boolean } };
+    expect(body.ok).toBe(false);
+    expect(body.checks.sessionsKv).toBe(false);
   });
 
   it("GET /", async () => {

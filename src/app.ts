@@ -57,12 +57,24 @@ export function createApp(): Hono<AppBindings> {
     }),
   );
 
-  app.get("/health", (c) =>
-    c.json({
-      ok: true,
-      service: "celina-bot",
-    }),
-  );
+  app.get("/health", async (c) => {
+    const telegramToken = Boolean(c.env?.TELEGRAM_BOT_TOKEN?.trim());
+    let sessionsKv = false;
+    const sessions = c.env?.SESSIONS;
+    if (sessions) {
+      try {
+        await sessions.get("__health__");
+        sessionsKv = true;
+      } catch {
+        sessionsKv = false;
+      }
+    }
+    const ok = telegramToken && sessionsKv;
+    return c.json(
+      { ok, service: "celina-bot", checks: { telegramToken, sessionsKv } },
+      ok ? 200 : 503,
+    );
+  });
 
   app.post("/telegram/webhook", async (c) => {
     if (!verifyWebhookSecret(c.env, c.req.header("X-Telegram-Bot-Api-Secret-Token"))) {

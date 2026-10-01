@@ -55,4 +55,4 @@ Do not hand-edit `src/aliases.generated.ts`. Optional memorable aliases live in 
 
 ## Deploy
 
-See **[DEPLOY.md](DEPLOY.md)** for secrets, KV, webhook URL, and BotFather copy. Production deploys from git (Cloudflare Workers Builds). Do not use a local Wrangler login that belongs to another Cloudflare account.
+See **[DEPLOY.md](DEPLOY.md)** for secrets, KV, webhook URL, and BotFather copy. Deploy with `npx wrangler deploy`. `account_id` in `wrangler.jsonc` pins the CELINA account. If Wrangler reports an account error, delete `node_modules/.cache/wrangler/wrangler-account.json` and retry.
